@@ -18,7 +18,7 @@ interface TodoItemsState {
 }
 
 interface TodoItemsAction {
-    type: 'loadState' | 'add' | 'delete' | 'toggleDone' | 'reorder';
+    type: 'loadState' | 'add' | 'delete' | 'toggleDone' | 'reorder' | 'edit';
     data: any;
 }
 
@@ -107,6 +107,26 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
             return {
                 ...state,
                 todoItems: action.data,
+            };
+        }
+
+        case 'edit': {
+            const itemIndex = state.todoItems.findIndex(
+                ({id}) => id === action.data.id,
+            );
+            const updateItem = {
+                id: action.data.id,
+                title: action.data.title,
+                details: action.data.details,
+            };
+
+            return {
+                ...state,
+                todoItems: [
+                    ...state.todoItems.slice(0, itemIndex),
+                    updateItem,
+                    ...state.todoItems.slice(itemIndex + 1),
+                ],
             };
         }
 
