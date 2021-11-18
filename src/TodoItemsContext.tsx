@@ -18,7 +18,7 @@ interface TodoItemsState {
 }
 
 interface TodoItemsAction {
-    type: 'loadState' | 'add' | 'delete' | 'toggleDone';
+    type: 'loadState' | 'add' | 'delete' | 'toggleDone' | 'reorder';
     data: any;
 }
 
@@ -103,6 +103,13 @@ function todoItemsReducer(state: TodoItemsState, action: TodoItemsAction) {
                     ...state.todoItems.slice(itemIndex + 1),
                 ],
             };
+        case 'reorder': {
+            return {
+                ...state,
+                todoItems: action.data,
+            };
+        }
+
         default:
             throw new Error();
     }

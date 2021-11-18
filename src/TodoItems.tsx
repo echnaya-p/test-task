@@ -9,15 +9,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import DeleteIcon from '@material-ui/icons/Delete';
 import { makeStyles } from '@material-ui/core/styles';
 import classnames from 'classnames';
-import { motion } from 'framer-motion';
 import { TodoItem, useTodoItems } from './TodoItemsContext';
-
-const spring = {
-    type: 'spring',
-    damping: 25,
-    stiffness: 120,
-    duration: 0.25,
-};
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const useTodoItemListStyles = makeStyles({
     root: {
@@ -28,6 +21,7 @@ const useTodoItemListStyles = makeStyles({
 
 export const TodoItemsList = function () {
     const { todoItems } = useTodoItems();
+    const { dispatch } = useTodoItems();
 
     const classes = useTodoItemListStyles();
 
@@ -43,14 +37,70 @@ export const TodoItemsList = function () {
         return 0;
     });
 
+    const reorder = (list: TodoItem[], startIndex: number, endIndex: number) => {
+        const result = Array.from(list);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+
+        return result;
+    };
+
+    type Id = string;
+    type DraggableId = Id;
+    type DroppableId = Id;
+    type TypeId = Id;
+    type DraggableLocation = {
+        droppableId: DroppableId,
+        index: number,
+        };
+    type DropReason = 'DROP' | 'CANCEL';
+    type MovementMode = 'FLUID' | 'SNAP';
+    type DropResult = {
+        draggableId: DraggableId,
+        type: TypeId,
+        source: DraggableLocation,
+        mode: MovementMode,
+        destination: DraggableLocation,
+        reason: DropReason,
+        };
+
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination) {
+            return;
+        }
+
+        const items = reorder(
+            sortedItems,
+            result.source.index,
+            result.destination.index
+        );
+
+        dispatch({ type: 'reorder', data: items});
+    };
+
     return (
-        <ul className={classes.root}>
-            {sortedItems.map((item) => (
-                <motion.li key={item.id} transition={spring} layout={true}>
-                    <TodoItemCard item={item} />
-                </motion.li>
-            ))}
-        </ul>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="droppable">
+            {(provided) => (
+                <ul className={classes.root} {...provided.droppableProps} ref={provided.innerRef}>
+                    {sortedItems.map((item, index) => (
+                        <Draggable key={item.id} draggableId={item.id} index={index}>
+                            {(provided) => (
+                                <li
+                                    key={item.id}
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                >
+                                    <TodoItemCard item={item} />
+                                </li>
+                            )}
+                        </Draggable>
+                    ))}
+                </ul>
+            )}
+        </Droppable>
+      </DragDropContext>
     );
 };
 
@@ -118,4 +168,5 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
             ) : null}
         </Card>
     );
+
 };
