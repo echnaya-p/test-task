@@ -26,7 +26,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "prettier": "prettier --write src/**",
+    "prepare": "husky install"
   },
   "eslintConfig": {
     "extends": [
@@ -47,6 +49,15 @@
     ]
   },
   "devDependencies": {
-    "@types/react-beautiful-dnd": "^13.1.2"
+    "@types/react-beautiful-dnd": "^13.1.2",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.0.3",
+    "prettier": "2.4.1"
+  },
+  "lint-staged": {
+    "*.(ts|tsx)": [
+      "npm run prettier",
+      "git add"
+    ]
   }
 }
