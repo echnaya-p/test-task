@@ -122,22 +122,24 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
     const classes = useTodoItemCardStyles();
     const { dispatch } = useTodoItems();
     const [isEdit, setEdit] = useState(false);
-    const [newTitle, setTitle] = useState('');
-    const [newDetails, setDetails] = useState('');
+    const [editedTitle, setEditedTitle] = useState('');
+    const [editedDetails, setEditedDetails] = useState('');
+    const [editedDone, setEditedDone] = useState(false);
 
     const handleDelete = useCallback(
         () => dispatch({ type: 'delete', data: { id: item.id } }),
         [item.id, dispatch],
     );
 
-    const handleEdit = ({title, details}: any) => () => {
-        setTitle(title);
-        setDetails(details);
+    const handleEdit = ({id, title, details = '', done}: TodoItem) => () => {
+        setEditedTitle(title);
+        setEditedDetails(details);
+        setEditedDone(done);
         setEdit(!isEdit);
     };
 
-    const handleSave = (e: object) => {
-        dispatch({type: 'edit', data: {id: item.id, title: newTitle, details: newDetails}});
+    const handleSave = () => {
+        dispatch({type: 'edit', data: {id: item.id, title: editedTitle, details: editedDetails, done: editedDone}});
         setEdit(!isEdit);
     };
 
@@ -150,10 +152,10 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
         [item.id, dispatch],
     );
 
-    const handleChangeText = (e: any) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.id === 'title') {
-            setTitle(e.target.value);
-        } else setDetails(e.target.value);
+            setEditedTitle(e.target.value);
+        } else setEditedDetails(e.target.value);
     };
 
     return (
@@ -169,7 +171,12 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
                           <IconButton aria-label="edit" onClick={handleSave}>
                             <SaveIcon />
                           </IconButton> :
-                          <IconButton aria-label="edit" onClick={handleEdit({title: item.title, details: item.details})}>
+                          <IconButton aria-label="edit" onClick={handleEdit({
+                              id: item.id,
+                              title: item.title,
+                              details: item?.details,
+                              done: item.done,
+                          })}>
                               <EditIcon />
                           </IconButton>
                         }
@@ -180,13 +187,7 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
                 }
                 title={ isEdit ?
                   <>
-                    <Checkbox
-                      checked={item.done}
-                      onChange={handleToggleDone}
-                      name={`checked-${item.id}`}
-                      color="primary"
-                    />
-                    <TextField id="title" variant="standard" value={newTitle}  onChange={handleChangeText} />
+                    <TextField id="title" variant="standard" value={editedTitle}  onChange={handleChange} />
                   </> :
                     <FormControlLabel
                         control={
@@ -201,16 +202,16 @@ export const TodoItemCard = function ({ item }: { item: TodoItem }) {
                     />
                 }
             />
-            {item.details ? (
+            {item?.details && (
                 <CardContent>
                     {isEdit ?
-                        <TextField id="details" variant="standard" value={newDetails} onChange={handleChangeText}/> :
+                        <TextField id="details" variant="standard" value={editedDetails} onChange={handleChange}/> :
                         <Typography variant="body2" component="p">
                             {item.details}
                         </Typography>
                     }
                 </CardContent>
-            ) : null}
+            )}
         </Card>
     );
 
